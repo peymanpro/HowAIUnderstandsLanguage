@@ -81,7 +81,13 @@
       );
     }
 
-    return this.dot(other) / (leftNorm * rightNorm);
+    const similarity =
+      this.dot(other) / (leftNorm * rightNorm);
+
+    return Math.max(
+      -1,
+      Math.min(1, similarity),
+    );
   }
 
   private ensureSameDimension(other: Vector): void {
@@ -99,3 +105,4 @@
     );
   }
 }
+
