@@ -1,9 +1,8 @@
 ﻿import { corpus } from "../data/corpus.js";
 import { CoOccurrenceModel } from "./Language/CoOccurrenceModel.js";
 import { CorpusBuilder } from "./Language/CorpusBuilder.js";
-import { SemanticExperiment } from "./Language/SemanticExperiment.js";
-import { SemanticSentenceRepresentation } from "./Language/SemanticSentenceRepresentation.js";
-import { SemanticSentenceSimilarity } from "./Language/SemanticSentenceSimilarity.js";
+import { PPMIModel } from "./Language/PPMIModel.js";
+import { SemanticComparisonExperiment } from "./Language/SemanticComparisonExperiment.js";
 
 console.log("HowAIUnderstandsLanguage");
 console.log("========================");
@@ -18,41 +17,41 @@ const {
   dataset,
 } = builder.build(corpus);
 
-const wordModel = new CoOccurrenceModel(
-  vocabulary,
-  dataset,
-  1,
-);
-
-wordModel.build();
-
-const representation =
-  new SemanticSentenceRepresentation(
-    wordModel,
+const coOccurrence =
+  new CoOccurrenceModel(
+    vocabulary,
+    dataset,
+    1,
   );
 
-const similarity =
-  new SemanticSentenceSimilarity(
-    representation,
+const ppmi =
+  new PPMIModel(
+    vocabulary,
+    dataset,
+    1,
   );
+
+coOccurrence.build();
+ppmi.build();
 
 const experiment =
-  new SemanticExperiment(similarity);
+  new SemanticComparisonExperiment(
+    coOccurrence,
+    ppmi,
+  );
 
-console.log("Corpus");
-console.log("------");
-console.log(`Sentences:  ${dataset.size}`);
-console.log(`Vocabulary: ${vocabulary.size}`);
+console.log("Semantic Representation Experiment");
+console.log("-----------------------------------");
+console.log();
+console.log(`Corpus sentences: ${dataset.size}`);
+console.log(`Vocabulary size:  ${vocabulary.size}`);
 console.log();
 
 const comparisons = [
-  [0, 4],
   [0, 2],
   [0, 3],
+  [2, 4],
 ] as const;
-
-console.log("Semantic Sentence Similarity");
-console.log("----------------------------");
 
 for (const [firstIndex, secondIndex] of comparisons) {
   const comparison = experiment.compare(
@@ -60,31 +59,47 @@ for (const [firstIndex, secondIndex] of comparisons) {
     dataset.get(secondIndex),
   );
 
-  console.log();
   console.log(`"${comparison.first.text}"`);
   console.log("vs");
   console.log(`"${comparison.second.text}"`);
+  console.log();
+
   console.log(
-    `Similarity: ${comparison.similarity.toFixed(4)}`,
+    `Raw co-occurrence similarity: ` +
+    `${comparison.coOccurrenceSimilarity.toFixed(4)}`,
   );
+
+  console.log(
+    `PPMI similarity:              ` +
+    `${comparison.ppmiSimilarity.toFixed(4)}`,
+  );
+
+  console.log();
+  console.log("-----------------------------------");
+  console.log();
 }
 
-console.log();
 console.log("Interpretation");
 console.log("-------------");
 console.log(
-  "The current model represents words using their observed",
+  "Raw co-occurrence counts treat observed context",
 );
 console.log(
-  "contexts and combines those representations to compare",
+  "frequencies directly as representation.",
 );
 console.log(
-  "sentences numerically.",
+  "PPMI reweights those observations according to",
+);
+console.log(
+  "how informative a context is for a word.",
 );
 console.log();
 console.log(
-  "This is a simplified semantic representation, not full",
+  "Neither method represents full language understanding.",
 );
 console.log(
-  "language understanding.",
+  "They demonstrate how increasingly informative numerical",
+);
+console.log(
+  "representations can be constructed from language data.",
 );
